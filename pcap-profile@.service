@@ -1,0 +1,29 @@
+# systemctl start pcap-<profile>@<nic>.service
+
+[Unit]
+Description=Run a packet capture on <INSTANCE> interface
+Documentation=http://www.site.tbd/docs
+
+# Bind this service to specified NIC
+BindsTo=sys-subsystem-net-devices-%i.device
+After=sys-subsystem-net-devices-%i.device
+
+# tcpdump is installed and executable
+AssertFileIsExecutable=/usr/sbin/tcpdump
+
+# Target directory exists and is writeable
+AssertPathIsDirectory=/var/log/tcpdumpd.d/%j
+AssertPathIsReadWrite=/var/log/tcpdumpd.d/%j
+
+[Service]
+Type=oneshot
+
+# Set CWD to target directory
+WorkingDirectory=/var/log/tcpdumpd.d/%j
+
+# tcpdump -i <NIC> -w 2021-04-21__10-42-<NIC>- -C 25 -W 10 -K -n
+ExecStart=/usr/sbin/tcpdump -i %i -w $(date +%%Y-%%m-%%d__%%H-%%M)-%i- -C 25 -W 10 -K -n
+
+[Install]
+# systemctl start pcap-profile@lo.service
+DefaultInstance=lo
